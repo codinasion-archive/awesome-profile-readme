@@ -1,0 +1,317 @@
+##########################################################################
+##  This workflow will run when an issue is labeled 'profile-approved'  ##
+##########################################################################
+##  1. Get username from Issue                                          ##
+##  2. Check if username is valid (from github api)                     ##
+##  3. Generate username's README image                                 ##
+##########################################################################
+
+# Name of the workflow
+# https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#name
+name: Approve Profile
+
+# Trigger condition
+# https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#on
+on:
+  issues:
+    types: [labeled]
+
+# Environment variables
+# https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#env
+# https://docs.github.com/en/actions/learn-github-actions/environment-variables
+env:
+  # OWNER : The owner of the repository
+  OWNER: codinasion
+
+  # REPO : The name of the repository
+  REPO: awesome-profile-readme
+
+# Jobs to run
+# https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobs
+jobs:
+  approve_profile:
+    # Check if label 'profile-approved' is present
+    # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idif
+    if: github.event.label.name == 'profile-approved'
+
+    # Run jobs on Linux
+    # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idruns-on
+    runs-on: ubuntu-latest
+
+    # Steps to run
+    # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idsteps
+    steps:
+      # Checkout repository
+      # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#example-using-versioned-actions
+      # https://github.com/actions/checkout
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # Cache node_modules
+      # https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows
+      - name: Cache Node Modules
+        id: cache-node-modules
+        uses: actions/cache@v2
+        with:
+          path: node_modules
+          key: node-modules-${{ hashFiles('yarn.lock') }}
+
+      # Install dependencies
+      - name: Yarn
+        # If 'yarn.lock' has changed or 'node_modules' is missing
+        # https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows#using-the-output-of-the-cache-action
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          yarn
+
+      ########################################################################
+      #####################  Echo issue data  ################################
+      ########################################################################
+      - name: Issue data
+        run: |
+          echo "Issue number : ${{ github.event.issue.number }}"
+          echo "Issue title  : ${{ github.event.issue.title }}"
+          echo "Issue body   : ${{ github.event.issue.body }}"
+
+      ########################################################################
+      #####################  Get username from issue body  ###################
+      ########################################################################
+      - name: Get Issue Data
+        id: get-issue-data
+        uses: ./action/
+        with:
+          owner: ${{ env.OWNER }}
+          repo: ${{ env.REPO }}
+          issue-body: ${{ github.event.issue.body }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          get-issue-data: "true"
+
+      ####################################################################
+      ####################  Username is not valid !!! ####################
+      ####################################################################
+
+      # Comment on issue that username is not valid
+      - name: Create username invalid comment
+        if: steps.get-issue-data.outputs.username_valid != 'true'
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            :wave: Hey @${{ github.event.issue.user.login }}
+
+            :warning: The username [`${{ steps.get-issue-data.outputs.username }}`](https://github.com/${{ steps.get-issue-data.outputs.username }}/) doesn't seems right
+
+            Please raise another issue with the correct username
+
+      # Add label 'invalid-username' to issue
+      - name: Add label 'invalid-username'
+        if: steps.get-issue-data.outputs.username_valid != 'true'
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          number: ${{ github.event.issue.number }}
+          labels: invalid-username
+
+      # Remove label 'profile-approved' from issue
+      - name: Remove label 'profile-approved'
+        if: steps.get-issue-data.outputs.username_valid != 'true'
+        uses: actions-ecosystem/action-remove-labels@v1
+        with:
+          number: ${{ github.event.issue.number }}
+          labels: profile-approved
+
+      # Close issue with error message
+      - name: Close issue
+        if: steps.get-issue-data.outputs.username_valid != 'true'
+        uses: peter-evans/close-issue@v2
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          comment: |
+            This issue is closed because the username [`${{ steps.get-issue-data.outputs.username }}`](https://github.com/${{ steps.get-issue-data.outputs.username }}/) is not valid
+
+            If you think it's a `bug` :beetle: please raise an issue to report this bug
+
+      ####################################################################
+      ####################  Username is valid !!! ########################
+      ####################################################################
+
+      # Echo username
+      - name: Check get issue data outputs
+        if: steps.get-issue-data.outputs.username_valid == 'true'
+        run: |
+          echo "username : ${{ steps.get-issue-data.outputs.username }}"
+          echo "username_valid : ${{ steps.get-issue-data.outputs.username_valid }}"
+
+      # Generate username's README.md Image
+      - name: Generate Image
+        id: generate-image
+        if: steps.get-issue-data.outputs.username_valid == 'true'
+        uses: ./action/
+        with:
+          owner: ${{ env.OWNER }}
+          repo: ${{ env.REPO }}
+          username: "${{ steps.get-issue-data.outputs.username }}"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          generate-image: "true"
+
+      ####################################################################
+      ####################  README.md Not Found  #########################
+      ####################################################################
+
+      # Comment on issue that README.md is not found
+      - name: Create README not found comment
+        if: steps.get-issue-data.outputs.username_valid == 'true' && steps.generate-image.outputs.readme_valid != 'true'
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            :wave: Hey @${{ github.event.issue.user.login }}
+
+            We are unable to find a profile README.md file for the username [`${{ steps.get-issue-data.outputs.username }}`](https://github.com/${{ steps.get-issue-data.outputs.username }}/)
+
+            Learn more about the profile README.md file here:
+
+              - https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-github-profile/customizing-your-profile/managing-your-profile-readme
+
+      # Add label 'readme-not-found' to issue
+      - name: Add label 'readme-not-found'
+        if: steps.get-issue-data.outputs.username_valid == 'true' && steps.generate-image.outputs.readme_valid != 'true'
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          number: ${{ github.event.issue.number }}
+          labels: readme-not-found
+
+      # Remove label 'profile-approved' from issue
+      - name: Remove label 'profile-approved'
+        if: steps.get-issue-data.outputs.username_valid == 'true' && steps.generate-image.outputs.readme_valid != 'true'
+        uses: actions-ecosystem/action-remove-labels@v1
+        with:
+          number: ${{ github.event.issue.number }}
+          labels: profile-approved
+
+      # Close issue with error message
+      - name: Close issue
+        if: steps.get-issue-data.outputs.username_valid == 'true' && steps.generate-image.outputs.readme_valid != 'true'
+        uses: peter-evans/close-issue@v2
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          comment: |
+            This issue is closed because profile README not found for username [`${{ steps.get-issue-data.outputs.username }}`](https://github.com/${{ steps.get-issue-data.outputs.username }}/)
+
+            If you think it's a `bug` :beetle: please raise an issue to report this bug
+
+      ####################################################################
+      ####################  README.md Found  #############################
+      ####################################################################
+
+      # Check if README.md is valid
+      - name: Check generate image outputs
+        if: steps.get-issue-data.outputs.username_valid == 'true' && steps.generate-image.outputs.readme_valid == 'true'
+        run: |
+          echo "readme_valid : ${{ steps.generate-image.outputs.readme_valid }}"
+
+      # Push README.md Image to 'image' branch
+      - name: push profile image
+        if: steps.get-issue-data.outputs.username_valid == 'true' && steps.generate-image.outputs.readme_valid == 'true'
+        uses: crazy-max/ghaction-github-pages@v3.0.0
+        with:
+          target_branch: image
+          build_dir: images
+          committer: Harsh Raj <harshraj8843@users.noreply.github.com>
+          author: Harsh Raj <harshraj8843@users.noreply.github.com>
+          commit_message: |
+            Add profile readme image for ${{ steps.get-issue-data.outputs.username }}
+
+            Co-authored-by: ${{ steps.get-issue-data.outputs.username }} <${{ steps.get-issue-data.outputs.username }}@users.noreply.github.com>
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      ####################################################################
+      #####################  Generate Json Data  #########################
+      ####################################################################
+
+      # Generate json data for username
+      - name: Generate Json
+        id: generate-json
+        if: steps.get-issue-data.outputs.username_valid == 'true' && steps.generate-image.outputs.readme_valid == 'true'
+        uses: ./action/
+        with:
+          owner: ${{ env.OWNER }}
+          repo: ${{ env.REPO }}
+          username: "${{ steps.get-issue-data.outputs.username }}"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          generate-json: "true"
+          issue-link: "${{ github.event.issue.html_url }}"
+
+      # Push json data to 'profile' branch
+      - name: push profile json
+        if: steps.get-issue-data.outputs.username_valid == 'true' && steps.generate-image.outputs.readme_valid == 'true'
+        uses: crazy-max/ghaction-github-pages@v3.0.0
+        with:
+          target_branch: profile
+          build_dir: profiles
+          keep_history: true # dont change this line
+          committer: Harsh Raj <harshraj8843@users.noreply.github.com>
+          author: Harsh Raj <harshraj8843@users.noreply.github.com>
+          commit_message: |
+            Add profile readme image for ${{ steps.get-issue-data.outputs.username }}
+
+            Co-authored-by: ${{ steps.get-issue-data.outputs.username }} <${{ steps.get-issue-data.outputs.username }}@users.noreply.github.com>
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      ####################################################################
+      ####################  Profile data Created  ########################
+      ####################################################################
+
+      # Comment on issue that profile data is created
+      - name: Create success comment
+        if: steps.get-issue-data.outputs.username_valid == 'true' && steps.generate-image.outputs.readme_valid == 'true'
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            :wave: Hey @${{ github.event.issue.user.login }}
+
+            Readme Image and Data for username [`${{ steps.get-issue-data.outputs.username }}`](https://github.com/${{ steps.get-issue-data.outputs.username }}/) is successfully created
+
+            - [x] User data saved to `https://github.com/${{ env.OWNER }}/${{ env.REPO }}/tree/profile/${{ steps.get-issue-data.outputs.username }}.json`
+            - [x] User README Image saved to ${{ steps.generate-json.outputs.readme_image }}
+
+            ---
+
+            ![${{ steps.get-issue-data.outputs.username }}'s README Image](${{ steps.generate-json.outputs.readme_image }})
+
+            ---
+
+            You can share this README Image from the following link:
+
+            ```md
+            ${{ steps.generate-json.outputs.readme_image }}
+            ```
+
+            ---
+
+      # Close issue with success message
+      - name: Close issue
+        if: steps.get-issue-data.outputs.username_valid == 'true' && steps.generate-image.outputs.readme_valid == 'true'
+        uses: peter-evans/close-issue@v2
+        with:
+          issue-number: ${{ github.event.issue.number }}
+          comment: |
+            Congratulations :tada: :tada: :tada:
+
+            The profile readme data for username [`${{ steps.get-issue-data.outputs.username }}`](https://github.com/${{ steps.get-issue-data.outputs.username }}/) is successfully created
+
+            Thanks for contributing to this project :pray:
+
+            You are awesome :hugs:
+
+####################################################################
+#######################  END OF WORKFLOW  ##########################
+####################################################################
+
+# Learn more about Github Workflows
+# https://docs.github.com/en/actions/using-workflows/about-workflows
+
+# Learn more about Github Actions
+# https://docs.github.com/en/actions/creating-actions/creating-a-javascript-action

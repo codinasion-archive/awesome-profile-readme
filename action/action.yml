@@ -1,0 +1,92 @@
+##########################################################################
+##            This is the Github Action metadata file                   ##
+##########################################################################
+
+# Name of the Github Action
+# https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#name
+name: "Generate Profile"
+
+# Description of the Github Action
+# https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#description
+description: "Generate github profile"
+
+# Inputs for the Github Action
+# https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#inputs
+inputs:
+  ##########################################################
+  ##                    Basic Inputs                      ##
+  ##########################################################
+
+  # Owner of the repository
+  owner:
+    description: "repo owner"
+    required: true
+
+  # Repository name
+  repo:
+    description: "repo name"
+    required: true
+
+  # Github username
+  username:
+    description: "github username"
+    required: true
+
+  # Github token (auto generated for each workflow)
+  # https://docs.github.com/en/actions/security-guides/automatic-token-authentication#about-the-github_token-secret
+  token:
+    description: "github token"
+    required: true
+
+  ##########################################################
+  ##                      Issue Data                      ##
+  ##########################################################
+
+  # issue body
+  issue-body:
+    description: "issue body"
+    required: true
+
+  # issue link
+  issue-link:
+    description: "issue link"
+    required: false
+
+  # get issue data trigger
+  get-issue-data:
+    description: "get issue data trigger"
+    required: true
+    default: "false"
+
+  ##########################################################
+  ##                      Generate Image                  ##
+  ##########################################################
+
+  generate-image:
+    description: "generate image condition"
+    required: true
+    default: "false"
+
+  ##########################################################
+  ##                   Generate Json Data                 ##
+  ##########################################################
+
+  generate-json:
+    description: "generate json data condition"
+    required: true
+    default: "false"
+
+# Github Action Runner
+# https://docs.github.com/en/actions/creating-actions/metadata-syntax-for-github-actions#runs
+runs:
+  using: "node16"
+  main: "../index.js"
+##########################################################################
+###################  End of Github Action metadata file  #################
+##########################################################################
+
+# Learn more about Github Action metadata file
+# https://docs.github.com/en/actions/creating-actions/creating-a-javascript-action#creating-an-action-metadata-file
+
+# Learn more about Github Actions
+# https://docs.github.com/en/actions/creating-actions/creating-a-javascript-action
