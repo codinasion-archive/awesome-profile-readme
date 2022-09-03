@@ -1,0 +1,10 @@
+name: Add Profile
+description: Add GitHub profile
+labels: ["add-profile", "profile-approved"]
+body:
+  - type: textarea
+    attributes:
+      label: Username
+      description: Enter github username only
+    validations:
+      required: true
