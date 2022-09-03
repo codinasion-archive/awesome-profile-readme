@@ -38,7 +38,7 @@ So we created this project. This project is fully automated by Github Actions. Y
 
 ## How can I contribute ?
 
-Just raise an issue with your github username and the rest is taken care of by Github Actions :smiley:.
+Just [raise an issue](https://github.com/codinasion/awesome-profile-readme/issues/new?assignees=&title=Add+Profile&labels=add-profile%2Cprofile-approved&template=add-profile.yml) with your github username and the rest is taken care of by Github Actions :smiley:.
 
 [See more about the automated workflow here](workflow.md)
 
