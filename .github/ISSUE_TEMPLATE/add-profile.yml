@@ -2,9 +2,10 @@ name: Add Profile
 description: Add GitHub profile
 labels: ["add-profile", "profile-approved"]
 body:
-  - type: textarea
+  - type: input
     attributes:
       label: Username
       description: Enter github username only
+      placeholder: For e.g. harshraj8843
     validations:
       required: true
