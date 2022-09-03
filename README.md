@@ -50,7 +50,15 @@ Just [raise an issue](https://github.com/codinasion/awesome-profile-readme/issue
 
 ## :receipt: Profile List
 
-:construction: **Work in progress**
+- [x] API
+
+  You can access the profile list in JSON format [here](https://api.codinasion.org/awesome-profile)
+
+  ```md
+  https://api.codinasion.org/awesome-profile
+  ```
+
+- [ ] :construction: Website
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/codinasion/.github/master/assets/rainbow-hr.png" alt="rainbow hr" width="100%" height="70%">
