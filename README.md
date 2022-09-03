@@ -40,6 +40,8 @@ So we created this project. This project is fully automated by Github Actions. Y
 
 Just [raise an issue](https://github.com/codinasion/awesome-profile-readme/issues/new?assignees=&title=Add+Profile&labels=add-profile%2Cprofile-approved&template=add-profile.yml) with your github username and the rest is taken care of by Github Actions :smiley:.
 
+[See a sample issue](https://github.com/codinasion/awesome-profile-readme/issues/6)
+
 [See more about the automated workflow here](workflow.md)
 
 <div align="center">
