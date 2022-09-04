@@ -302,6 +302,8 @@ jobs:
 
             The profile readme data for username [`${{ steps.get-issue-data.outputs.username }}`](https://github.com/${{ steps.get-issue-data.outputs.username }}/) is successfully created
 
+            It can take upto 6 hours to reflect the changes on the website :hourglass_flowing_sand:
+
             Thanks for contributing to this project :pray:
 
             You are awesome :hugs:
