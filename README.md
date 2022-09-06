@@ -58,7 +58,7 @@ Just [raise an issue](https://github.com/codinasion/awesome-profile-readme/issue
   https://api.codinasion.org/awesome-profile
   ```
 
-- [ ] :construction: Website
+- [x] [Website](https://codinasion.org/projects/awesome-profile)
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/codinasion/.github/master/assets/rainbow-hr.png" alt="rainbow hr" width="100%" height="70%">
