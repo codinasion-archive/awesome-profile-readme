@@ -180,7 +180,8 @@ async function generateImage(username) {
 
     if (
       await page.$(
-        "#js-pjax-container > div.container-xl.px-3.px-md-4.px-lg-5 > div > div.Layout-main > div:nth-child(2) > div > div.Box.mt-4 > div"
+        // "#js-pjax-container > div.container-xl.px-3.px-md-4.px-lg-5 > div > div.Layout-main > div:nth-child(2) > div > div.Box.mt-4 > div"
+        "body > div.application-main > main > div.container-xl.px-3.px-md-4.px-lg-5 > div > div.Layout-main > div:nth-child(2) > div > div.Box.mt-4 > div"
       )
     ) {
       // README.md found :)
@@ -188,11 +189,13 @@ async function generateImage(username) {
 
       await console.log("wait for readme load");
       await page.waitForSelector(
-        "#js-pjax-container > div.container-xl.px-3.px-md-4.px-lg-5 > div > div.Layout-main > div:nth-child(2) > div > div.Box.mt-4 > div"
+        // "#js-pjax-container > div.container-xl.px-3.px-md-4.px-lg-5 > div > div.Layout-main > div:nth-child(2) > div > div.Box.mt-4 > div"
+        "body > div.application-main > main > div.container-xl.px-3.px-md-4.px-lg-5 > div > div.Layout-main > div:nth-child(2) > div > div.Box.mt-4 > div"
       );
 
       const profile_readme = await page.$(
-        "#js-pjax-container > div.container-xl.px-3.px-md-4.px-lg-5 > div > div.Layout-main > div:nth-child(2) > div > div.Box.mt-4 > div"
+        // "#js-pjax-container > div.container-xl.px-3.px-md-4.px-lg-5 > div > div.Layout-main > div:nth-child(2) > div > div.Box.mt-4 > div"
+        "body > div.application-main > main > div.container-xl.px-3.px-md-4.px-lg-5 > div > div.Layout-main > div:nth-child(2) > div > div.Box.mt-4 > div"
       );
 
       await console.log("screenshotting");
