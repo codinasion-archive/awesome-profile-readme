@@ -5,7 +5,7 @@
   "type": "module",
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^1.9.0",
+    "@actions/core": "^1.9.1",
     "chrome-aws-lambda": "^10.1.0",
     "node-fetch": "^3.2.10",
     "puppeteer-core": "^15.5.0"
